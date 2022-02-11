@@ -14,19 +14,57 @@ Louis Keith
 from time import time
 
 
-# shifting nth root algorithm
+base = 10
+precision = 100
+
+
+def get_next_aligned_block(s: str, n: int) -> int:
+    """Return the next most significant aligned block of n digits from num."""
+    # prepend as many zeros as is necessary to make the length of s a multiple of n
+    if s == '':
+        return 0, ''
+    elif len(s) == n:
+        return int(s), ''
+    else:
+        s = '0' * (n - (len(s) % n)) + s
+        return int(s[0:n]), s[n:]
+
+
+def find_beta(y, r, n, alpha):
+    """By the loop invariant of the nth root algorithm, beta is the largest digit that satisfies the following condition."""
+    for beta in reversed(range(10)):
+        if (base * y + beta) ** n - (base ** n) * (y ** n) <= (base ** n) * r + alpha:
+            return beta
+
+
+def nth_root(num, n):
+    """Uses the nth root algorithm to calculate the decimal expansion of a square root up to a certain precision."""
+    # initialization
+    y = 0
+    r = 0 
+    s = str(num)
+    # main loop
+    for _ in range(precision):
+        alpha, s = get_next_aligned_block(s, n)
+        beta = find_beta(y, r, n, alpha)
+        y_prime = base * y + beta
+        r = (base ** n) * r + alpha - ((base * y + beta) ** n - (base ** n) * (y ** n))
+        y = y_prime
+    return y
+
+
 def main():
+    """Uses the shifting nth root algorithm to calculate the digital expansion to 100 places for the first 100 numbers."""
+    n = 2
+    tot_sum = 0
+
     for num in range(2, 101):
-        base = 10  # base of the number system
-        n = 2  # degree of the root to be extracted
-        x = 0  # radicand processed thus far
-        y = 0  # root extracted thus far
-        r = 0  # remainder
-        alpha = 0  # next n digits of the radicand
-        beta = 0  # next digit of the root
-        x_prime = 0  # next value of x
-        y_prime = 0  # next value of y
-        r_prime = 0  # next value of r
+        if int(num ** 0.5) != num ** 0.5:
+            y = nth_root(num, n)
+            y_sum = sum([int(c) for c in str(y)])
+            tot_sum += y_sum
+    
+    print(tot_sum)
 
 
 if __name__ == '__main__':
