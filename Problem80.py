@@ -19,7 +19,8 @@ def main():
     print(math.e**(0.5 * math.log(2)))
 
 
+
 if __name__ == '__main__':
     start = time()
     main()
-    print('FINISHED IN %d SECONDS' % round(time() - start, 4))
+    print('\nFINISHED IN %s SECONDS' % round(time() - start, 4))
