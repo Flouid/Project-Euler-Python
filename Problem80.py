@@ -12,12 +12,21 @@ Louis Keith
 """
 
 from time import time
-import math
 
 
+# shifting nth root algorithm
 def main():
-    print(math.e**(0.5 * math.log(2)))
-
+    for num in range(2, 101):
+        base = 10  # base of the number system
+        n = 2  # degree of the root to be extracted
+        x = 0  # radicand processed thus far
+        y = 0  # root extracted thus far
+        r = 0  # remainder
+        alpha = 0  # next n digits of the radicand
+        beta = 0  # next digit of the root
+        x_prime = 0  # next value of x
+        y_prime = 0  # next value of y
+        r_prime = 0  # next value of r
 
 
 if __name__ == '__main__':
