@@ -77,4 +77,4 @@ def main():
 if __name__ == '__main__':
     start = time()
     main()
-    print('FINISHED IN %d SECONDS', round(time() - start, 4))
+    print('FINISHED IN %d SECONDS' % round(time() - start, 4))
