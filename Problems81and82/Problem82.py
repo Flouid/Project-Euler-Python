@@ -19,61 +19,48 @@ Louis Keith
 
 from time import time
 import sys
-from copy import deepcopy
 from Problem81 import ingest_data, print_matrix
 
 
-def find_path(matrix):
-    """A dynamic programming approach that calculates the total cost function 
-    from each place in the leftmost column of the input matrix. For each start,
-    the minimum cost is the smallest value in the rightmost column. The answer 
-    is the lowest minimum cost seen."""
-    r_end, c_end = len(matrix[0]) - 1, len(matrix) - 1
-    min_cost = sys.maxsize - 1
+def generate_cost(cost):
+    """Uses a dynamic programming approach to calculate the minimum cost to traverse
+    the matrix from left to right. It works by going column by column and at each step
+    calculating the cost of moving forward and then checking if traversing up or down
+    from another row would be cheaper. The rightmost column of the resulting cost matrix
+    is the minium cost to reach each cell in that column."""
+    n_rows, n_cols = len(cost), len(cost[0])
 
-    # for each starting row in the first column, get the total cost matrix
-    for r_start in range(r_end + 1):
-        cost, cost_matrix = get_cost(matrix, r_start, r_end, c_end)
-        # track the lowest cost that has been calculated
-        if cost < min_cost:
-            min_cost = cost
-            min_cost_matrix = deepcopy(cost_matrix)
-        if verbose:
-            print('CHECKING:', r_start, cost)
+    # for every column except the first, get the minimum cost to each cell
+    for c in range(1, n_cols):
+        # generate forward partial path sums
+        partial = [row[c] for row in cost]
+        for r in range(n_rows):
+            partial[r] += cost[r][c-1]
+        # generate downward partial path sums
+        for r in range(n_rows):
+            # explore moving down the column as much as possible
+            traverse = 0
+            for e in range(1, n_rows-r):
+                traverse += cost[r+e][c]
+                # the cost of moving down is now greater than starting elsewhere
+                if traverse > partial[r+e]:
+                    break
+                partial[r+e] = min(partial[r+e], partial[r] + traverse)
+        # generate upward partial path sums
+        for r in reversed(range(n_rows)):
+            # explore moving up the column as much as possible
+            traverse = 0
+            for e in range(1, r):
+                traverse += cost[r-e][c]
+                # the cost of moving up is now greater than starting elsewhere
+                if traverse > partial[r-e]:
+                    break
+                partial[r-e] = min(partial[r-e], partial[r] + traverse)
+        # replace the current column of the cost matrix with the partial path sums
+        for r in range(n_rows):
+            cost[r][c] = partial[r]
 
-    return min_cost, min_cost_matrix
-
-
-def get_cost(matrix, r_start, r_end, c_end):
-    """Find the minimum cost to any cell in the right column 
-    from a given start row in the input matrix."""
-    # create a deep copy of the input matrix to edit
-    total_cost = deepcopy(matrix)
-
-    # populate the left-most column of the cost matrix
-    for r in range(r_start + 1, r_end + 1):
-        total_cost[r][0] += total_cost[r-1][0]
-    for r in reversed(range(0, r_start)):
-        total_cost[r][0] += total_cost[r+1][0]
-
-    # populate the rest of the cost matrix
-    for c in range(1, c_end + 1):
-        # calculate the start row and everything beneath it
-        for r in range(r_start, r_end + 1):
-            # don't consider costs that haven't been calculated yet
-            if r == r_start:
-                total_cost[r][c] += total_cost[r][c-1]
-            else:
-                total_cost[r][c] += min(total_cost[r][c-1],
-                                        total_cost[r-1][c])
-        # calculate everything above the start row
-        for r in reversed(range(0, r_start)):
-            # special case for when the start row is the bottom row
-            total_cost[r][c] += min(total_cost[r][c-1],
-                                    total_cost[r+1][c])
-    
-    # find the minimum of the rightmost column and return
-    return min([row[-1] for row in total_cost]), total_cost
+    return min([row[-1] for row in cost]), cost
 
 
 def write_matrix(matrix):
@@ -88,10 +75,11 @@ def write_matrix(matrix):
     
 
 def main():
-    cost, cost_matrix = find_path(ingest_data('test_matrix.txt'))
+    cost, cost_matrix = generate_cost(ingest_data('matrix.txt'))
     print(cost)
 
     if verbose:
+        print_matrix(cost_matrix)
         write_matrix(cost_matrix)
 
     
