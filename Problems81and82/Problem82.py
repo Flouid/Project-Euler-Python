@@ -18,17 +18,80 @@ Louis Keith
 
 
 from time import time
+import sys
+from copy import deepcopy
 from Problem81 import ingest_data, print_matrix
 
 
 def find_path(matrix):
-    return 0
+    """A dynamic programming approach that calculates the total cost function 
+    from each place in the leftmost column of the input matrix. For each start,
+    the minimum cost is the smallest value in the rightmost column. The answer 
+    is the lowest minimum cost seen."""
+    r_end, c_end = len(matrix[0]) - 1, len(matrix) - 1
+    min_cost = sys.maxsize - 1
+
+    # for each starting row in the first column, get the total cost matrix
+    for r_start in range(r_end + 1):
+        cost, cost_matrix = get_cost(matrix, r_start, r_end, c_end)
+        print('CHECKING:', r_start, cost)
+        # track the lowest cost that has been calculated
+        if cost < min_cost:
+            min_cost = cost
+            min_cost_matrix = deepcopy(cost_matrix)
+
+    return min_cost, min_cost_matrix
 
 
-def main():
-    print_matrix(ingest_data('test_matrix.txt'))
+def get_cost(matrix, r_start, r_end, c_end):
+    """Find the minimum cost to any cell in the right column 
+    from a given start row in the input matrix."""
+    # create a deep copy of the input matrix to edit
+    total_cost = deepcopy(matrix)
+
+    # populate the left-most column of the cost matrix
+    for r in range(r_start + 1, r_end + 1):
+        total_cost[r][0] += total_cost[r-1][0]
+    for r in reversed(range(0, r_start)):
+        total_cost[r][0] += total_cost[r+1][0]
+
+    # populate the rest of the cost matrix
+    for c in range(1, c_end + 1):
+        # calculate the start row and everything beneath it
+        for r in range(r_start, r_end + 1):
+            # don't consider costs that haven't been calculated yet
+            if r == r_start:
+                total_cost[r][c] += total_cost[r][c-1]
+            else:
+                total_cost[r][c] += min(total_cost[r][c-1],
+                                        total_cost[r-1][c])
+        # calculate everything above the start row
+        for r in reversed(range(0, r_start)):
+            # special case for when the start row is the bottom row
+            total_cost[r][c] += min(total_cost[r][c-1],
+                                    total_cost[r+1][c])
+    
+    # find the minimum of the rightmost column and return
+    return min([row[-1] for row in total_cost]), total_cost
+
+
+def write_matrix(matrix):
+    """Write a matrix to an output file in the same format as the input matrix."""
+    with open('out.txt', 'w') as f:
+        for r in range(len(matrix)):
+            for c in range(len(matrix[r])):
+                f.write(str(matrix[r][c]))
+                if c != len(matrix[r]) - 1:
+                    f.write(',')
+            f.write('\n')
     
 
+def main():
+    cost, cost_matrix = find_path(ingest_data('test_matrix.txt'))
+    write_matrix(cost_matrix)
+    print(cost)
+
+    
 if __name__ == '__main__':
     start = time()
     main()
