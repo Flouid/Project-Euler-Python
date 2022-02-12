@@ -18,16 +18,47 @@ Louis Keith
 
 
 from time import time
+import sys
 from Problem81 import ingest_data, print_matrix
 from Problem82 import write_matrix
 
 
+def get_sum(cost):
+    """A dynamic programming approach that calculates a total cost function for a matrix.
+    Transforms the input matrix to a total cost matrix as it goes along, no extra memory required.
+    Returns the minimum cost to traverse the entire matrix from top right to bottom left."""
+    r_end, c_end = len(cost[0]) - 1, len(cost) - 1
+
+    # populate the first row and first column with their respective costs to reach
+    for c in range(1, c_end + 1):
+        cost[0][c] += cost[0][c-1]
+    for r in range(1, r_end + 1):
+        cost[r][0] += cost[r-1][0]
+
+    # populate the rest of the total cost matrix
+    for r in range(1, r_end + 1):
+        for c in range(1, c_end + 1):
+            cost[r][c] += min(cost[r-1][c],
+                                    cost[r][c-1])
+
+    return cost[r_end][c_end], cost
+
+
 def main():
-    matrix = ingest_data('test_matrix.txt')
-    print(matrix[-1][-1])
+    cost, cost_matrix = get_sum(ingest_data('test_matrix.txt'))
+    print(cost)
 
+    if verbose:
+        print_matrix(cost_matrix)
+        write_matrix(cost_matrix)
 
+    
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == '-v':
+        verbose = True
+    else:
+        verbose = False
+
     start = time()
     main()
     print('\nFINISHED IN %s SECONDS' % round(time() - start, 4))
