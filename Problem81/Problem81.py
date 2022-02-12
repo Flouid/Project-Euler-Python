@@ -30,67 +30,28 @@ def ingest_data(filename='matrix.txt'):
     return data
 
 
-def get_path_sum(matrix):
-    r, c = 0, 0
-    r_end, c_end = len(matrix)-1, len(matrix[0])-1
-    path_sum = matrix[r][c]
+def get_sum(r, c):
+    """A recursive function to calculate the minimum cost to get to
+    the end from a given coordinate position."""
+    cost = matrix[r][c]
 
-    while (r, c) != (r_end, c_end):
-        # check if on bottom row, if so then move right
-        if r == r_end:
-            c += 1
-        # check if on right wall, if so then move down
-        elif c == c_end:
-            r += 1
-        # check if number beneath is less than number to right, if so then move down
-        elif matrix[r+1][c] < matrix[r][c+1]:
-            r += 1
-        # otherwise then move right
-        else:
-            c += 1
-        path_sum += matrix[r][c]
-        print('FORWARD: ', matrix[r][c], path_sum)
-
-    return path_sum
-
-
-
-def get_backward_sum(matrix):
-    r, c = len(matrix)-1, len(matrix[0])-1
-    r_end, c_end = 0, 0
-    path_sum = matrix[r][c]
-
-    while (r, c) != (r_end, c_end):
-        # check if on top row, if so then move left
-        if r == r_end:
-            c -= 1
-        # check if on left wall, if so then move up
-        elif c == c_end:
-            r -= 1
-        # check if number above is less than number to left, if so then move up
-        elif matrix[r-1][c] < matrix[r][c-1]:
-            r -= 1
-        # otherwise then move left
-        else:
-            c -= 1
-        path_sum += matrix[r][c]
-        print('BACKWARD: ', matrix[r][c], path_sum)
-
-    return path_sum
-
-
-
-def main():
-    matrix = ingest_data('test_matrix.txt')
-    forward_sum = get_path_sum(matrix)
-    print()
-    backward_sum = get_backward_sum(matrix)
-
-    print(min(forward_sum, backward_sum))
+    # if at the end, just return the cost of the cell
+    if (r, c) == (r_end, c_end):
+        return cost
+    # if in the bottom row, traverse left
+    elif r == r_end:
+        return cost + get_sum(r, c+1)
+    # if in the rightmost column, traverse down
+    elif c == c_end:
+        return cost + get_sum(r+1, c)
+    # otherwise, explore both paths and return the minimum
+    else:
+        return cost + min(get_sum(r+1, c), get_sum(r, c+1))
     
-
 
 if __name__ == '__main__':
     start = time()
-    main()
+    matrix = ingest_data()
+    r_end, c_end = len(matrix)-1, len(matrix[0])-1
+    print(get_sum(65, 65))
     print('\nFINISHED IN %s SECONDS' % round(time() - start, 4))
