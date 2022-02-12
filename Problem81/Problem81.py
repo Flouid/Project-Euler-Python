@@ -16,42 +16,42 @@ Louis Keith
 """
 
 from time import time
-from turtle import back
 
 
 def ingest_data(filename='matrix.txt'):
     """Ingest the matrix from disk and split it into a nested list.
     Each element is a list representing a row in the matrix."""
     with open(filename) as f:
-        # read rows
-        data = f.read().split('\n')
-        # split rows into individual lists of integers
-        data = [list(map(int, line.split(','))) for line in data if line != '']
-    return data
+        # one-liners are fun
+        return [list(map(int, line.split(','))) for line in f.read().split('\n') if line != '']
 
 
-def get_sum(r, c):
-    """A recursive function to calculate the minimum cost to get to
-    the end from a given coordinate position."""
-    cost = matrix[r][c]
+def get_sum(total_cost):
+    """A dynamic programming approach that calculates a total cost function for a matrix.
+    Transforms the input matrix to a total cost matrix as it goes along, no extra memory required.
+    Returns the minimum cost to traverse the entire matrix from top right to bottom left."""
+    r_end, c_end = len(total_cost[0]) - 1, len(total_cost) - 1
 
-    # if at the end, just return the cost of the cell
-    if (r, c) == (r_end, c_end):
-        return cost
-    # if in the bottom row, traverse left
-    elif r == r_end:
-        return cost + get_sum(r, c+1)
-    # if in the rightmost column, traverse down
-    elif c == c_end:
-        return cost + get_sum(r+1, c)
-    # otherwise, explore both paths and return the minimum
-    else:
-        return cost + min(get_sum(r+1, c), get_sum(r, c+1))
+    # populate the first row and first column with their respective costs to reach
+    for c in range(1, c_end + 1):
+        total_cost[0][c] += total_cost[0][c-1]
+    for r in range(1, r_end + 1):
+        total_cost[r][0] += total_cost[r-1][0]
+
+    # populate the rest of the total cost matrix
+    for r in range(1, r_end + 1):
+        for c in range(1, c_end + 1):
+            total_cost[r][c] += min(total_cost[r-1][c],
+                                    total_cost[r][c-1])
+
+    return total_cost[r_end][c_end]
+
+
+def main():
+    print(get_sum(ingest_data()))
     
 
 if __name__ == '__main__':
     start = time()
-    matrix = ingest_data()
-    r_end, c_end = len(matrix)-1, len(matrix[0])-1
-    print(get_sum(65, 65))
+    main()
     print('\nFINISHED IN %s SECONDS' % round(time() - start, 4))
