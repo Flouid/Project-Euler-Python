@@ -34,11 +34,12 @@ def find_path(matrix):
     # for each starting row in the first column, get the total cost matrix
     for r_start in range(r_end + 1):
         cost, cost_matrix = get_cost(matrix, r_start, r_end, c_end)
-        print('CHECKING:', r_start, cost)
         # track the lowest cost that has been calculated
         if cost < min_cost:
             min_cost = cost
             min_cost_matrix = deepcopy(cost_matrix)
+        if verbose:
+            print('CHECKING:', r_start, cost)
 
     return min_cost, min_cost_matrix
 
@@ -88,11 +89,18 @@ def write_matrix(matrix):
 
 def main():
     cost, cost_matrix = find_path(ingest_data('test_matrix.txt'))
-    write_matrix(cost_matrix)
     print(cost)
+
+    if verbose:
+        write_matrix(cost_matrix)
 
     
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == '-v':
+        verbose = True
+    else:
+        verbose = False
+
     start = time()
     main()
     print('\nFINISHED IN %s SECONDS' % round(time() - start, 4))
