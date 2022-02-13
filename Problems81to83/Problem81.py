@@ -44,7 +44,7 @@ def get_sum(total_cost):
             total_cost[r][c] += min(total_cost[r-1][c],
                                     total_cost[r][c-1])
 
-    return total_cost[r_end][c_end]
+    return total_cost[r_end][c_end], total_cost
 
 
 def print_matrix(matrix):
@@ -56,7 +56,8 @@ def print_matrix(matrix):
 
 
 def main():
-    print(get_sum(ingest_data()))
+    cost, _ = get_sum(ingest_data())
+    print(cost)
     
 
 if __name__ == '__main__':
