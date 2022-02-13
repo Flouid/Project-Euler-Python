@@ -19,33 +19,91 @@ Louis Keith
 
 from time import time
 import sys
-from Problem81 import ingest_data, print_matrix
+import numpy as np
+from Problem81 import ingest_data, get_sum, print_matrix
 from Problem82 import write_matrix
 
 
-def get_sum(cost):
-    """A dynamic programming approach that calculates a total cost function for a matrix.
-    Transforms the input matrix to a total cost matrix as it goes along, no extra memory required.
-    Returns the minimum cost to traverse the entire matrix from top right to bottom left."""
-    r_end, c_end = len(cost[0]) - 1, len(cost) - 1
+def perform_update(partial, cost, r, c, nrows, ncols):
+    """Take a partial cost matrix, the input cost matrix, and a pair of coordinates r and c
+    and perform an update on the partial matrix."""
+    # do nothing in the top left corner
+    if r == 0 and c == 0:
+        return partial[-1, -1], partial
+    # special case for top right corner
+    elif r == 0 and c == ncols-1:
+        partial[r, c] = cost[r, c] + min(partial[r, c-1],
+                                         partial[r+1, c])
+    # special case for bottom left corner
+    elif r == nrows-1 and c == 0:
+        partial[r, c] = cost[r, c] + min(partial[r, c+1],
+                                         partial[r-1, c])
+    # special case for bottom right corner
+    elif r == nrows-1 and c == ncols-1:
+        partial[r, c] = cost[r, c] + min(partial[r, c-1],
+                                         partial[r-1, c])
+    # special case for top row
+    elif r == 0:
+        partial[r, c] = cost[r, c] + min(partial[r, c-1],
+                                         partial[r, c+1],
+                                         partial[r+1, c])
+    # special case for bottom row
+    elif r == nrows-1:
+        partial[r, c] = cost[r, c] + min(partial[r, c-1],
+                                         partial[r, c+1],
+                                         partial[r-1, c])
+    # special case for left column
+    elif c == 0:
+        partial[r, c] = cost[r, c] + min(partial[r, c+1],
+                                         partial[r-1, c],
+                                         partial[r+1, c])
+    # special case for right column
+    elif c == ncols-1:
+        partial[r, c] = cost[r, c] + min(partial[r, c-1],
+                                         partial[r-1, c],
+                                         partial[r+1, c])
+    # general case
+    else:
+        partial[r, c] = cost[r, c] + min(partial[r, c-1],
+                                         partial[r, c+1],
+                                         partial[r-1, c],
+                                         partial[r+1, c])
+    return partial[-1, -1], partial
 
-    # populate the first row and first column with their respective costs to reach
-    for c in range(1, c_end + 1):
-        cost[0][c] += cost[0][c-1]
-    for r in range(1, r_end + 1):
-        cost[r][0] += cost[r-1][0]
 
-    # populate the rest of the total cost matrix
-    for r in range(1, r_end + 1):
-        for c in range(1, c_end + 1):
-            cost[r][c] += min(cost[r-1][c],
-                                    cost[r][c-1])
+def generate_cost(matrix):
+    """Take a cost matrix as input and calculate the shortest possible path from
+    the top left corner to the bottom right. Do this by first using the solution
+    from Problem 81 to get the sum moving only down and to the right, then iterately
+    improving it by checking if any of the total costs can be imroved. This algorithm
+    runs until further passes don't improve the result."""
+    # use numpy arrays because they have nicer syntax for indexing
+    cost = np.array(matrix)
+    nrows, ncols = np.shape(cost)
 
-    return cost[r_end][c_end], cost
+    # get a partial cost matrix resulting from only moving down and to the right
+    _, partial = get_sum(matrix)
+    partial = np.array(partial)
+    result = partial[-1, -1]
 
+    passes = 0
+    while True:
+        passes += 1
+        # one pass of the algorithm updates every cell in the matrix
+        for r in range(nrows):
+            for c in range(ncols):
+                new_result, partial = perform_update(partial, cost, r, c, nrows, ncols)
+        # if no improvement was made, the algorithm is finished
+        if new_result == result:
+            if verbose:
+                print('PASSED REQUIRED: %d' % passes)
+            return result, partial
+        else:
+            result = new_result
+    
 
 def main():
-    cost, cost_matrix = get_sum(ingest_data('test_matrix.txt'))
+    cost, cost_matrix = generate_cost(ingest_data('matrix.txt'))
     print(cost)
 
     if verbose:
@@ -54,10 +112,9 @@ def main():
 
     
 if __name__ == '__main__':
+    verbose = False
     if len(sys.argv) == 2 and sys.argv[1] == '-v':
         verbose = True
-    else:
-        verbose = False
 
     start = time()
     main()
