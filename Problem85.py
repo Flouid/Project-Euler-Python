@@ -17,7 +17,7 @@ def find_best_area(target=2000000):
     """Search the solution space within some bounds to keep it as quick as possible."""
     best_area = 0
     smallest_dist = target
-    limit = 100
+    limit = 2000
     margin = 1.02
 
     for c in range(2, limit):
