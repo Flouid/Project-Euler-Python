@@ -6,7 +6,7 @@ DATE HERE
 
 from time import time
 import sys
-    
+
 
 def main():
     print('hello world')
