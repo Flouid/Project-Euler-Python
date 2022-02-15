@@ -23,42 +23,25 @@ import sys
 import math
 
 
-def is_solution(x, y, z):
-    """Determines if the shortest path length along a cubiod of dimensions (x, y, z) is an integer.
-    If it is assumed that x will always be the largest parameter, then the formula is always the same."""
-    d = math.sqrt((y + z)**2 + x**2)
-    return int(d) == d
-
-
-def num_combinations(a, b):
-    """Returns the number of unique combinations of integers that add up to the sum of two numbers"""
-    return int(abs(a - b) / 2) + 1
-
-
-def num_solutions(limit):
-    """Find all solutions with integer pathlength below a given maximum dimension."""
-    paths = 0
-    for x in range(1, limit + 1):
-        for y in range(1, x + 1):
-            for z in range(1, y + 1):
-                if is_solution(x, y, z):
-                    paths += 1
-
-                    if verbose:
-                        print('i: %d' % paths, end='\t')
-                        print('%dx%dx%d' % (x, y, z), end='\t')
-                        print('C =', num_combinations(y, z), end='\n')
-
-    return paths
-
-
 def get_next_m(limit, paths):
-    """Get the number of paths for the next value of m using brute force."""
-    for y in range(1, limit + 1):
-        for z in range(1, y + 1):
-            if is_solution(limit, y, z):
-                paths += 1
+    """Use the assumption that limit will always be the largest side of the cubiod and that the sum
+    of the other two sides can be dealt with independantly to get the number of cubiods for the next value of m."""
+    for xy in range(2, limit * 2):
+        d = math.sqrt(xy**2 + limit**2)
+        if int(d) == d:
+            paths += num_combinations(xy, limit)
     return paths
+
+
+def num_combinations(xy, m):
+    """Find how many integers x and y can be found such that 1 <= x <= y <= m and x + y == xy.
+    This represents how many cubiods can be created from the sum xy."""
+    combinations = 0
+    for y in range(1, m + 1):
+        for x in range(1, y + 1):
+            if x + y == xy:
+                combinations += 1
+    return combinations
 
 
 def main():
