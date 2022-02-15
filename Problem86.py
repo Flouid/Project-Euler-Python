@@ -24,23 +24,15 @@ import math
 
 
 def is_solution(x, y, z):
-    """Determines if the shortest path length along a cubiod of dimensions (x, y, z) is an integer."""
-    if x == y and x == z:
-        d = math.sqrt((x + x)**2 + x**2)
-    elif x == y:
-        d = min(math.sqrt((x + z)**2 + x**2),
-                math.sqrt((x + y)**2 + z**2))
-    elif x == z:
-        d = min(math.sqrt((x + y)**2 + z**2),
-                math.sqrt((x + z)**2 + y**2))
-    elif y == z:
-        d = min(math.sqrt((x + z)**2 + y**2),
-                math.sqrt((y + z)**2 + x**2))
-    else:
-        d = min(math.sqrt((x + y)**2 + z**2),
-                math.sqrt((x + z)**2 + y**2),
-                math.sqrt((y + z)**2 + x**2))
-    return int(d) == d, d
+    """Determines if the shortest path length along a cubiod of dimensions (x, y, z) is an integer.
+    If it is assumed that x will always be the largest parameter, then the formula is always the same."""
+    d = math.sqrt((y + z)**2 + x**2)
+    return int(d) == d
+
+
+def num_combinations(a, b):
+    """Returns the number of unique combinations of integers that add up to the sum of two numbers"""
+    return int(abs(a - b) / 2) + 1
 
 
 def num_solutions(limit):
@@ -49,29 +41,24 @@ def num_solutions(limit):
     for x in range(1, limit + 1):
         for y in range(1, x + 1):
             for z in range(1, y + 1):
-                sol, d = is_solution(x, y, z)
-                if sol:
+                if is_solution(x, y, z):
                     paths += 1
 
                     if verbose:
-                        print('%dx%dx%d = %d' % (x, y, z, d), end='\t')
+                        print('i: %d' % paths, end='\t')
+                        print('%dx%dx%d' % (x, y, z), end='\t')
                         print('C =', num_combinations(y, z), end='\n')
 
     return paths
 
 
 def get_next_m(limit, paths):
+    """Get the number of paths for the next value of m using brute force."""
     for y in range(1, limit + 1):
         for z in range(1, y + 1):
-            sol, _ = is_solution(limit, y, z)
-            if sol:
+            if is_solution(limit, y, z):
                 paths += 1
     return paths
-
-
-def num_combinations(a, b):
-    """Returns the number of unique combinations of integers that add up to the sum of two numbers"""
-    return int(abs(a - b) / 2) + 1
 
 
 def main():
@@ -83,7 +70,6 @@ def main():
         paths = get_next_m(m, paths)
         if verbose:
             print('M: %d has %d solutions' % (m, paths))
-
     print(m)
 
 
@@ -94,5 +80,4 @@ if __name__ == '__main__':
 
     start = time()
     main()
-    # print(num_solutions(100))
     print('\nFINISHED IN %s SECONDS' % round(time() - start, 4))
