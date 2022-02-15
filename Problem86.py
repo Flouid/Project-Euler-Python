@@ -36,12 +36,17 @@ def get_next_m(limit, paths):
 def num_combinations(xy, m):
     """Find how many integers x and y can be found such that 1 <= x <= y <= m and x + y == xy.
     This represents how many cubiods can be created from the sum xy."""
-    combinations = 0
-    for y in range(1, m + 1):
-        for x in range(1, y + 1):
-            if x + y == xy:
-                combinations += 1
-    return combinations
+    # initialize x and y to be half of their sum
+    x, y = int(xy / 2), int(xy / 2)
+    # if the sum was odd, increment the larger of the two to preserve the condition x + y == xy
+    if xy & 1 == 1:
+        y += 1
+
+    # return the shortest distance from the respective bounds of x and y
+    if m - y < x - 1:
+        return m - y + 1
+    else:
+        return x
 
 
 def main():
