@@ -3,10 +3,10 @@ The smallest number expressible as the sum of a prime square, prime cube,
 and prime fourth power is 28. In fact, there are exactly four numbers below 
 fifty that can be expressed in such a way:
 
-28 = 22 + 23 + 24
-33 = 32 + 23 + 24
-49 = 52 + 23 + 24
-47 = 22 + 33 + 24
+28 = 2^2 + 2^3 + 2^4
+33 = 3^2 + 2^3 + 2^4
+49 = 5^2 + 2^3 + 2^4
+47 = 2^2 + 3^3 + 2^4
 
 How many numbers below fifty million can be expressed as the sum of a prime square, 
 prime cube, and prime fourth power?
@@ -18,11 +18,50 @@ Louis Keith
 
 from time import time
 import sys
+from utils import is_prime
+import random
+
+
+def find_primes(threshold=10000):
+    """Use the Miller-Rabin algorithm to generate all primes below a threshold."""
+    primes = [2]
+    for n in range(3, threshold):
+        if is_prime(n):
+            primes.append(n)
+    return primes
+
+
+def find_num_triples(threshold, primes):
+    # track the number of triples found
+    triples = []
+    len_primes = len(primes)
+
+    for k in range(len_primes):
+        for j in range(len_primes):
+            for i in range(len_primes):
+                sum = pow(primes[i], 2) + pow(primes[j], 3) + pow(primes[k], 4)
+                if sum < threshold:
+                    if sum not in triples:
+                        triples.append(sum)
+                        if verbose:
+                            print('%d = %d^2 + %d^3 + %d^4' % (sum, primes[i], primes[j], primes[k]))
+                else:
+                    break
+            if pow(primes[0], 2) + pow(primes[j], 3) + pow(primes[k], 4) >= threshold:
+                break
+        if pow(primes[0], 2) + pow(primes[0], 3) + pow(primes[k], 4) >= threshold:
+            break
+    return len(triples)
 
 
 def main():
+    threshold = 50000000
+    primes = find_primes(int(pow(threshold, 0.5)))
+    triples = find_num_triples(threshold, primes)
+    
+    print(triples)
     if verbose:
-        print('hello world')
+        print(primes)
 
 
 if __name__ == '__main__':
