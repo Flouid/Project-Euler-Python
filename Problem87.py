@@ -19,11 +19,13 @@ Louis Keith
 from time import time
 import sys
 from utils import is_prime
-import random
+import numpy as np
 
 
-def find_primes(threshold=10000):
+def find_primes(threshold):
     """Use the Miller-Rabin algorithm to generate all primes below a threshold."""
+    if verbose:
+        print('Finding all primes below %d...' % threshold)
     primes = [2]
     for n in range(3, threshold):
         if is_prime(n):
@@ -32,38 +34,47 @@ def find_primes(threshold=10000):
 
 
 def find_num_triples(threshold, primes):
-    triples = []
+    """Use a dynamic programming approach to populate the entire solution space.
+    Returns the number of unique solutions found in that solution space."""
+    # save computation time by calculating the primes to each power of interest ahead of time
     power2 = [pow(prime, 2) for prime in primes]
     power3 = [pow(prime, 3) for prime in primes]
     power4 = [pow(prime, 4) for prime in primes]
     len_primes = len(primes)
+    # create a 3D matrix where the coordinates of each element represent the combination
+    # of primes required to generate that element, initialize it with zeros at first.
+    solution_space = np.zeros((len_primes, len_primes, len_primes), dtype=int)
 
+    # populate the matrix
     for k in range(len_primes):
         for j in range(len_primes):
             for i in range(len_primes):
                 sum = power2[i] + power3[j] + power4[k]
                 if sum < threshold:
-                    if sum not in triples:
-                        triples.append(sum)
-                        if verbose:
-                            print('%d = %d^2 + %d^3 + %d^4' % (sum, primes[i], primes[j], primes[k]))
+                    # debugging statement
+                    if verbose:
+                        print('%d = %d^2 + %d^3 + %d^4' % (sum, primes[i], primes[j], primes[k]))
+                    solution_space[i, j, k] = sum
+                # if at any point the sum exceeds the threshold, stop populating along that axis
                 else:
                     break
             if power2[0] + power3[j] + power4[k] >= threshold:
                 break
         if power2[0] + power3[0] + power4[k] >= threshold:
             break
-    return len(triples)
+    # calculating the number of unique elements takes some time
+    if verbose:
+        print('Counting unique elements of the solution space...')
+    # don't consider 0 as a solution, so subtract 1
+    return len(np.unique(solution_space)) - 1
 
 
 def main():
     threshold = 50000000
     primes = find_primes(int(pow(threshold, 0.5)))
-    triples = find_num_triples(threshold, primes)
-    
-    print(triples)
-    if verbose:
-        print(primes)
+    num_triples = find_num_triples(threshold, primes)
+
+    print(num_triples)
 
 
 if __name__ == '__main__':
