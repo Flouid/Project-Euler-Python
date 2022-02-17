@@ -32,14 +32,16 @@ def find_primes(threshold=10000):
 
 
 def find_num_triples(threshold, primes):
-    # track the number of triples found
     triples = []
+    power2 = [pow(prime, 2) for prime in primes]
+    power3 = [pow(prime, 3) for prime in primes]
+    power4 = [pow(prime, 4) for prime in primes]
     len_primes = len(primes)
 
     for k in range(len_primes):
         for j in range(len_primes):
             for i in range(len_primes):
-                sum = pow(primes[i], 2) + pow(primes[j], 3) + pow(primes[k], 4)
+                sum = power2[i] + power3[j] + power4[k]
                 if sum < threshold:
                     if sum not in triples:
                         triples.append(sum)
@@ -47,9 +49,9 @@ def find_num_triples(threshold, primes):
                             print('%d = %d^2 + %d^3 + %d^4' % (sum, primes[i], primes[j], primes[k]))
                 else:
                     break
-            if pow(primes[0], 2) + pow(primes[j], 3) + pow(primes[k], 4) >= threshold:
+            if power2[0] + power3[j] + power4[k] >= threshold:
                 break
-        if pow(primes[0], 2) + pow(primes[0], 3) + pow(primes[k], 4) >= threshold:
+        if power2[0] + power3[0] + power4[k] >= threshold:
             break
     return len(triples)
 
