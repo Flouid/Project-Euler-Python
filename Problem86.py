@@ -27,8 +27,7 @@ def get_next_m(limit, paths):
     """Use the assumption that limit will always be the largest side of the cubiod and that the sum
     of the other two sides can be dealt with independantly to get the number of cubiods for the next value of m."""
     for xy in range(2, limit * 2):
-        d = math.sqrt(xy**2 + limit**2)
-        if int(d) == d:
+        if math.sqrt(xy**2 + limit**2).is_integer():
             paths += num_combinations(xy, limit)
     return paths
 
@@ -36,17 +35,12 @@ def get_next_m(limit, paths):
 def num_combinations(xy, m):
     """Find how many integers x and y can be found such that 1 <= x <= y <= m and x + y == xy.
     This represents how many cubiods can be created from the sum xy."""
-    # initialize x and y to be half of their sum
-    x, y = int(xy / 2), int(xy / 2)
-    # if the sum was odd, increment the larger of the two to preserve the condition x + y == xy
-    if xy & 1 == 1:
-        y += 1
+    # initialize x and y to be half of their sum, if xy is odd then y gets the extra 1
+    x = int(xy / 2)
+    y = x + (xy & 1)
 
     # return the shortest distance from the respective bounds of x and y
-    if m - y < x - 1:
-        return m - y + 1
-    else:
-        return x
+    return min(m - y + 1, x)
 
 
 def main():
